@@ -110,39 +110,36 @@ if ($Assess) {
     Write-Host "Unknown:       $Unknown"
     Write-Host ""
 
+
     $Report = foreach ($Result in $Results) {
 
-        $Properties = $Result.PSObject.Properties
-
-
-        $Control = "Unknown Control"
-
-        if ($Result.PSObject.Properties.Name -contains "Control") {
-            $Control = $Result.Control
+        $Control = if ($Result.PSObject.Properties["Profile"]) {
+            if ([string]::IsNullOrWhiteSpace([string]$Result.Profile)) {
+                "Firewall"
+            }
+            else {
+                "Firewall - $($Result.Profile)"
+            }
         }
-        elseif (
-            $Result.PSObject.Properties.Name -contains "Profile" -and
-            -not [string]::IsNullOrWhiteSpace($Result.Profile)
-        ) {
-            $Control = "Firewall - $($Result.Profile)"
+        elseif ($Result.PSObject.Properties["AntivirusEnabled"]) {
+            "Microsoft Defender"
         }
-        elseif ($Result.PSObject.Properties.Name -contains "AntivirusEnabled") {
-            $Control = "Microsoft Defender"
+        elseif ($Result.PSObject.Properties["SMBv1Enabled"]) {
+            "SMBv1"
         }
-        elseif ($Result.PSObject.Properties.Name -contains "SMBv1Enabled") {
-            $Control = "SMBv1"
+        elseif ($Result.PSObject.Properties["AccountName"]) {
+            "Guest Account"
         }
-        elseif ($Result.PSObject.Properties.Name -contains "AccountSID") {
-            $Control = "Guest Account"
+        elseif ($Result.PSObject.Properties["Policy"]) {
+            "Audit - $($Result.Policy)"
         }
-        elseif ($Result.PSObject.Properties.Name -contains "Policy") {
-            $Control = "Audit - $($Result.Policy)"
+        else {
+            "Unknown Control"
         }
-
 
         [PSCustomObject]@{
-            Control      = $Control
-            Status       = $Result.Status
+            Control     = $Control
+            Status      = $Result.Status
             ErrorMessage = $Result.ErrorMessage
         }
     }

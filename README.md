@@ -28,7 +28,26 @@ Run the assessment from the project directory:
 .\Hardening.ps1 -Assess
 ```
 
+To export the assessment report to CSV:
+
+```powershell
+.\Hardening.ps1 -Assess -ExportCsv
+```
+
+To specify a custom output directory:
+
+```powershell
+.\Hardening.ps1 -Assess -ExportCsv -OutputPath ".\TestReports"
+```
+
+The report includes the computer name, scan date, control results, and error messages when available. The console also displays the overall assessment status and summary counts.
+
 The report includes the computer name, scan date, overall assessment status, control results, and error messages when available.
+# Export the assessment report to CSV
+.\Hardening.ps1 -Assess -ExportCsv
+
+# Specify a custom output directory
+.\Hardening.ps1 -Assess -ExportCsv -OutputPath ".\TestReports"
 
 ## Assessment Status
 
@@ -49,6 +68,9 @@ The current development tests include:
 - Assessment of audit policies using stable subcategory GUIDs and numeric configuration values.
 - Simulated failures to verify that failed checks return `Unknown` and preserve error details.
 - Verification that the main script reports control results and calculates the overall status.
+- Successful CSV export using the default output directory.
+- Successful CSV export using a custom output directory.
+- Invalid output path handling without reporting a false export success.
 
 These are development checks on the test system, not a claim of comprehensive compatibility testing across all Windows versions or enterprise environments.
 
@@ -79,7 +101,7 @@ Windows-Hardening/
 - [x] Built-in Guest account assessment
 - [x] Audit policy assessment
 - [x] Consolidated assessment report
-- [ ] Exportable assessment report
+- [x] CSV assessment report export
 - [ ] Controlled remediation mode
 - [ ] Post-remediation verification
 

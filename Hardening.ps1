@@ -1,6 +1,10 @@
 
 param(
-    [switch]$Assess
+    [switch]$Assess,
+
+    [switch]$ExportCsv,
+
+    [string]$OutputPath = ".\Reports"
 )
 
 $ErrorActionPreference = "Stop"
@@ -138,13 +142,49 @@ if ($Assess) {
         }
 
         [PSCustomObject]@{
-            Control     = $Control
-            Status      = $Result.Status
+            ComputerName = $env:COMPUTERNAME
+            ScanDate     = $Result.ScanDate
+            Control      = $Control
+            Status       = $Result.Status
             ErrorMessage = $Result.ErrorMessage
         }
     }
 
+
     $Report | Format-Table Control, Status, ErrorMessage -AutoSize -Wrap
+
+    if ($ExportCsv) {
+
+        try {
+            $ResolvedOutputPath = $ExecutionContext.SessionState.Path.
+                GetUnresolvedProviderPathFromPSPath($OutputPath)
+
+            if (-not (Test-Path -LiteralPath $ResolvedOutputPath -PathType Container)) {
+                New-Item -Path $ResolvedOutputPath -ItemType Directory -Force -ErrorAction Stop |
+                    Out-Null
+            }
+
+            $Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+            $FileName = "HardeningReport_${env:COMPUTERNAME}_$Timestamp.csv"
+            $CsvPath = Join-Path -Path $ResolvedOutputPath -ChildPath $FileName
+
+            $Report | Export-Csv -LiteralPath $CsvPath `
+                -NoTypeInformation `
+                -Encoding UTF8 `
+                -ErrorAction Stop
+
+            Write-Host ""
+            Write-Host "CSV report exported successfully:" -ForegroundColor Green
+            Write-Host $CsvPath
+        }
+        catch {
+            Write-Host ""
+            Write-Host "CSV export failed." -ForegroundColor Red
+            Write-Host "Reason: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+
+
 
 }
 else {

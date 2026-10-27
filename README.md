@@ -71,6 +71,8 @@ The current development tests include:
 - Successful CSV export using the default output directory.
 - Successful CSV export using a custom output directory.
 - Invalid output path handling without reporting a false export success.
+- Verification that checks returning no results produce an `Unknown` result.
+- Verification that results with a missing or invalid `Status` are converted to `Unknown`.
 
 These are development checks on the test system, not a claim of comprehensive compatibility testing across all Windows versions or enterprise environments.
 

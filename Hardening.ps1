@@ -28,7 +28,50 @@ function Invoke-HardeningCheck {
     )
 
     try {
-        @(& $Check)
+        $CheckResults = @(& $Check)
+
+        if ($CheckResults.Count -eq 0) {
+            return [PSCustomObject]@{
+                ComputerName = $env:COMPUTERNAME
+                ScanDate     = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                Control      = $Name
+                Status       = "Unknown"
+                ErrorMessage = "The check returned no results."
+            }
+        }
+
+        foreach ($Result in $CheckResults) {
+            $ValidStatuses = @(
+                "Compliant",
+                "Non-Compliant",
+                "Unknown"
+            )
+
+            $HasStatusProperty = (
+                $null -ne $Result -and
+                $null -ne $Result.PSObject.Properties["Status"]
+            )
+
+            $ValidStatus = (
+                $HasStatusProperty -and
+                $Result.Status -is [string] -and
+                $Result.Status -in $ValidStatuses
+            )
+
+            if (-not $ValidStatus) {
+                [PSCustomObject]@{
+                    ComputerName = $env:COMPUTERNAME
+                    ScanDate     = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                    Control      = $Name
+                    Status       = "Unknown"
+                    ErrorMessage = "The check returned an invalid result or missing/invalid Status."
+                }
+
+                continue
+            }
+
+            $Result
+        }
     }
     catch {
         [PSCustomObject]@{
@@ -40,7 +83,6 @@ function Invoke-HardeningCheck {
         }
     }
 }
-
 
 function Get-HardeningAssessment {
 

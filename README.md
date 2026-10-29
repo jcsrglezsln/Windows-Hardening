@@ -49,6 +49,18 @@ The report includes the computer name, scan date, overall assessment status, con
 # Specify a custom output directory
 .\Hardening.ps1 -Assess -ExportCsv -OutputPath ".\TestReports"
 
+### CSV Report Format
+
+The exported CSV contains a summary record followed by one record for each assessed control.
+
+- **Summary record:** includes the overall assessment status, compliant count, non-compliant count, unknown count, and total number of controls.
+- **Control records:** include the computer name, scan date, control name, individual status, and error message when available.
+- **RecordType:** distinguishes `Summary` records from `Control` records.
+
+For an assessment with 12 controls, the CSV contains 13 data rows: one summary record and 12 control records.
+
+The summary and control records share the same CSV columns. Fields that do not apply to a particular record type are left empty.
+
 ## Assessment Status
 
 - **Compliant:** The observed configuration meets the defined requirement.

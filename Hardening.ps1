@@ -210,10 +210,44 @@ if ($Assess) {
             $FileName = "HardeningReport_${env:COMPUTERNAME}_$Timestamp.csv"
             $CsvPath = Join-Path -Path $ResolvedOutputPath -ChildPath $FileName
 
-            $Report | Export-Csv -LiteralPath $CsvPath `
+
+            $SummaryRecord = [PSCustomObject]@{
+                RecordType      = "Summary"
+                ComputerName    = $env:COMPUTERNAME
+                ScanDate        = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                OverallStatus   = $OverallStatus
+                CompliantCount  = $Compliant
+                NonCompliantCount = $NonCompliant
+                UnknownCount    = $Unknown
+                TotalControls   = $Results.Count
+                Control         = $null
+                Status          = $null
+                ErrorMessage    = $null
+            }
+
+            $ControlRecords = foreach ($Item in $Report) {
+                [PSCustomObject]@{
+                    RecordType        = "Control"
+                    ComputerName      = $Item.ComputerName
+                    ScanDate          = $Item.ScanDate
+                    OverallStatus     = $null
+                    CompliantCount    = $null
+                    NonCompliantCount = $null
+                    UnknownCount      = $null
+                    TotalControls     = $null
+                    Control           = $Item.Control
+                    Status            = $Item.Status
+                    ErrorMessage      = $Item.ErrorMessage
+                }
+            }
+
+            $CsvRecords = @($SummaryRecord) + @($ControlRecords)
+
+            $CsvRecords | Export-Csv -LiteralPath $CsvPath `
                 -NoTypeInformation `
                 -Encoding UTF8 `
                 -ErrorAction Stop
+
 
             Write-Host ""
             Write-Host "CSV report exported successfully:" -ForegroundColor Green
